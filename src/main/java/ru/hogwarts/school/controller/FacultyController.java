@@ -2,8 +2,12 @@ package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.exception.FacultyAlreadyExistsException;
+import ru.hogwarts.school.exception.FacultyDoesNotExistException;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.FacultyService;
+
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/faculties")
@@ -16,7 +20,7 @@ public class FacultyController {
     }
 
     @PostMapping("/add")
-    public Faculty addStudent(@RequestBody Faculty faculty) {
+    public Faculty addFaculty(@RequestBody Faculty faculty) {
         return facultyService.addFaculty(faculty);
     }
 
@@ -41,5 +45,20 @@ public class FacultyController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(f);
+    }
+
+    @GetMapping("/filter")
+    public Collection<Faculty> getFacultiesOfColor(@RequestParam String color) {
+        return facultyService.getFacultiesOfColor(color);
+    }
+
+    @ExceptionHandler(FacultyAlreadyExistsException.class)
+    public ResponseEntity<String> handleFacultyAlreadyExistsException() {
+        return ResponseEntity.badRequest().body("Факультет уже был добавлен ранее");
+    }
+
+    @ExceptionHandler(FacultyDoesNotExistException.class)
+    public ResponseEntity<String> handleFacultyDoesNotExistException() {
+        return ResponseEntity.badRequest().body("Факультет не найден");
     }
 }

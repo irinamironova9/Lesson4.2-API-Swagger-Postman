@@ -5,8 +5,10 @@ import ru.hogwarts.school.exception.StudentAlreadyExistsException;
 import ru.hogwarts.school.exception.StudentDoesNotExistException;
 import ru.hogwarts.school.model.Student;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -19,7 +21,8 @@ public class StudentService {
             throw new StudentAlreadyExistsException();
         }
         student.setId(++counter);
-        return students.put(student.getId(), student);
+        students.put(student.getId(), student);
+        return student;
     }
 
     public Student findStudent(long id) {
@@ -30,10 +33,17 @@ public class StudentService {
         if (!students.containsValue(student)) {
             throw new StudentDoesNotExistException();
         }
-        return students.replace(student.getId(), student);
+        students.replace(student.getId(), student);
+        return student;
     }
 
     public Student deleteStudent(long id) {
         return students.remove(id);
+    }
+
+    public Collection<Student> getStudentsOfAge(int age) {
+        return students.values().stream()
+                .filter(s -> s.getAge() == age)
+                .collect(Collectors.toList());
     }
 }

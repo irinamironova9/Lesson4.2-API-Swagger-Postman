@@ -5,8 +5,10 @@ import ru.hogwarts.school.exception.FacultyAlreadyExistsException;
 import ru.hogwarts.school.exception.FacultyDoesNotExistException;
 import ru.hogwarts.school.model.Faculty;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class FacultyService {
@@ -19,7 +21,8 @@ public class FacultyService {
             throw new FacultyAlreadyExistsException();
         }
         faculty.setId(++counter);
-        return faculties.put(faculty.getId(), faculty);
+        faculties.put(faculty.getId(), faculty);
+        return faculty;
     }
 
     public Faculty findFaculty(long id) {
@@ -30,10 +33,17 @@ public class FacultyService {
         if (!faculties.containsValue(faculty)) {
             throw new FacultyDoesNotExistException();
         }
-        return faculties.replace(faculty.getId(), faculty);
+        faculties.replace(faculty.getId(), faculty);
+        return faculty;
     }
 
     public Faculty deleteFaculty(long id) {
         return faculties.remove(id);
+    }
+
+    public Collection<Faculty> getFacultiesOfColor(String color) {
+        return faculties.values().stream()
+                .filter(f -> f.getColor().equals(color))
+                .collect(Collectors.toList());
     }
 }
