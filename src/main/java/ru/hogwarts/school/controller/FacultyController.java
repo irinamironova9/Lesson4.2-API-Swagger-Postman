@@ -2,8 +2,6 @@ package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.hogwarts.school.exception.FacultyAlreadyExistsException;
-import ru.hogwarts.school.exception.FacultyDoesNotExistException;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.FacultyService;
 
@@ -20,8 +18,8 @@ public class FacultyController {
     }
 
     @PostMapping("/add")
-    public Faculty addFaculty(@RequestBody Faculty faculty) {
-        return facultyService.addFaculty(faculty);
+    public Faculty createFaculty(@RequestBody Faculty faculty) {
+        return facultyService.createFaculty(faculty);
     }
 
     @GetMapping("/{id}")
@@ -39,26 +37,13 @@ public class FacultyController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Faculty> deleteFaculty(@PathVariable("id") long id) {
-        Faculty f = facultyService.deleteFaculty(id);
-        if (f == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(f);
+    public ResponseEntity<String> deleteFaculty(@PathVariable("id") long id) {
+        facultyService.deleteFaculty(id);
+        return ResponseEntity.ok().body("Факультет успешно удалён");
     }
 
     @GetMapping("/filter")
-    public Collection<Faculty> getFacultiesOfColor(@RequestParam String color) {
-        return facultyService.getFacultiesOfColor(color);
-    }
-
-    @ExceptionHandler(FacultyAlreadyExistsException.class)
-    public ResponseEntity<String> handleFacultyAlreadyExistsException() {
-        return ResponseEntity.badRequest().body("Факультет уже был добавлен ранее");
-    }
-
-    @ExceptionHandler(FacultyDoesNotExistException.class)
-    public ResponseEntity<String> handleFacultyDoesNotExistException() {
-        return ResponseEntity.badRequest().body("Факультет не найден");
+    public Collection<Faculty> findFacultiesByColor(@RequestParam String color) {
+        return facultyService.findFacultiesByColor(color);
     }
 }

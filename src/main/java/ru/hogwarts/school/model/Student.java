@@ -11,6 +11,7 @@ public class Student {
     @Id
     @GeneratedValue
     private long id;
+
     private String name;
     private int age;
 
@@ -41,6 +42,10 @@ public class Student {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setAge(int age) {
