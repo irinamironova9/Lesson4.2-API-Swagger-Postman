@@ -20,8 +20,8 @@ public class StudentController {
     }
 
     @PostMapping("/add")
-    public Student addStudent(@RequestBody Student student) {
-        return studentService.addStudent(student);
+    public Student createStudent(@RequestBody Student student) {
+        return studentService.createStudent(student);
     }
 
     @GetMapping("/{id}")
@@ -39,26 +39,23 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Student> deleteStudent(@PathVariable("id") long id) {
-        Student s = studentService.deleteStudent(id);
-        if (s == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(s);
+    public ResponseEntity deleteStudent(@PathVariable("id") long id) {
+        studentService.deleteStudent(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/filter")
-    public Collection<Student> getStudentsOfAge(@RequestParam int age) {
-        return studentService.getStudentsOfAge(age);
+    public Collection<Student> findStudentsByAge(@RequestParam int age) {
+        return studentService.findStudentsByAge(age);
     }
-
-    @ExceptionHandler(StudentAlreadyExistsException.class)
-    public ResponseEntity<String> handleStudentAlreadyExistsException() {
-        return ResponseEntity.badRequest().body("Студент уже был добавлен ранее");
-    }
-
-    @ExceptionHandler(StudentDoesNotExistException.class)
-    public ResponseEntity<String> handleStudentDoesNotExistException() {
-        return ResponseEntity.badRequest().body("Студент не найден");
-    }
+//
+//    @ExceptionHandler(StudentAlreadyExistsException.class)
+//    public ResponseEntity<String> handleStudentAlreadyExistsException() {
+//        return ResponseEntity.badRequest().body("Студент уже был добавлен ранее");
+//    }
+//
+//    @ExceptionHandler(StudentDoesNotExistException.class)
+//    public ResponseEntity<String> handleStudentDoesNotExistException() {
+//        return ResponseEntity.badRequest().body("Студент не найден");
+//    }
 }
