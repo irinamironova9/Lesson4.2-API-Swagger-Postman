@@ -42,8 +42,14 @@ public class FacultyController {
         return ResponseEntity.ok().body("Факультет успешно удалён");
     }
 
-    @GetMapping("/filter")
+    @GetMapping("/filter/color")
     public Collection<Faculty> findFacultiesByColor(@RequestParam String color) {
         return facultyService.findFacultiesByColor(color);
+    }
+
+    @GetMapping("/filter/name-or-color")
+    public Collection<Faculty> findByNameIgnoreCaseOrColorIgnoreCase(@RequestParam(required = false) String name,
+                                                                     @RequestParam(required = false) String color) {
+        return facultyService.findByNameIgnoreCaseOrColorIgnoreCase(name, color);
     }
 }

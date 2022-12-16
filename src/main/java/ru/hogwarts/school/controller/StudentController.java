@@ -42,8 +42,13 @@ public class StudentController {
         return ResponseEntity.ok().body("Студент успешно удалён");
     }
 
-    @GetMapping("/filter")
+    @GetMapping("/filter/age")
     public Collection<Student> findStudentsByAge(@RequestParam int age) {
         return studentService.findStudentsByAge(age);
+    }
+
+    @GetMapping("/filter/age-gap")
+    public Collection<Student> findByAgeBetween(@RequestParam int min, @RequestParam int max) {
+        return studentService.findByAgeBetween(min, max);
     }
 }
