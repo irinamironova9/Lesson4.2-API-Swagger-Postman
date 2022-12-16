@@ -19,3 +19,10 @@ where age < id;
 select *
 from student
 order by age;
+
+select f.name, s.name, s.id
+from faculty as f,
+     student as s
+where f.id = s.faculty_id
+order by f.name, s.name;
+
