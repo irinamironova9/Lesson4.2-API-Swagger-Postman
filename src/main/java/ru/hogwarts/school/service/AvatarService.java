@@ -3,6 +3,7 @@ package ru.hogwarts.school.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.webjars.NotFoundException;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
@@ -34,9 +35,6 @@ public class AvatarService {
             MultipartFile avatarFile) throws IOException {
 
         Student student = studentService.findStudent(studentId);
-//        if (student == null) {
-//            throw new IllegalArgumentException();
-//        }
         Path filePath = Path.of(avatarsDir, studentId + "." +
                 getExtensions(avatarFile.getOriginalFilename()));
         Files.createDirectories(filePath.getParent());
@@ -45,11 +43,12 @@ public class AvatarService {
                 InputStream is = avatarFile.getInputStream();
                 OutputStream os = Files.newOutputStream(filePath, CREATE_NEW);
                 BufferedInputStream bis = new BufferedInputStream(is, 1024);
-                BufferedOutputStream bos = new BufferedOutputStream(os, 1024);
+                BufferedOutputStream bos = new BufferedOutputStream(os, 1024)
         ) {
             bis.transferTo(bos);
         }
-        Avatar avatar = findAvatar(studentId);
+        Avatar avatar = avatarRepository.findByStudentId(studentId)
+                .orElse(new Avatar());
         avatar.setStudent(student);
         avatar.setFilePath(filePath.toString());
         avatar.setFileSize(avatarFile.getSize());
@@ -58,9 +57,11 @@ public class AvatarService {
         avatarRepository.save(avatar);
     }
 
-    public Avatar findAvatar(long studentId) {
-        return avatarRepository.findByStudentId(studentId).orElse(new Avatar());
+    public Avatar findStudentsAvatar(long studentId) {
+        return avatarRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new NotFoundException(null));
     }
+
     private String getExtensions(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }

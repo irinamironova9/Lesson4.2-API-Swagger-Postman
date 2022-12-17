@@ -1,12 +1,21 @@
 package ru.hogwarts.school.controller;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.webjars.NotFoundException;
+import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.service.AvatarService;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @RestController
 @RequestMapping("/students/{id}/avatar")
@@ -30,18 +39,34 @@ public class AvatarController {
         return ResponseEntity.ok().body("Аватар успешно установлен");
     }
 
-//    @GetMapping
-//    public void getStudentsAvatar(@PathVariable long id) {
-//        avatarService.getStudentsAvatar(id);
-//    }
-//
-//    @GetMapping("/from-database")
-//    public void getStudentsAvatarPreview(@PathVariable long id) {
-//        avatarService.getStudentsAvatarPreview(id);
-//    }
+    @GetMapping
+    public void getStudentsAvatarFromLocalDisc(
+            @PathVariable long id,
+            HttpServletResponse response) throws IOException {
 
-//    @ExceptionHandler(IllegalArgumentException.class)
-//    public ResponseEntity handleException() {
-//        return ResponseEntity.badRequest().build();
-//    }
+        Avatar avatar = avatarService.findStudentsAvatar(id);
+        Path path = Path.of(avatar.getFilePath());
+        try (InputStream is = Files.newInputStream(path);
+             OutputStream os = response.getOutputStream()) {
+            response.setStatus(200);
+            response.setContentType(avatar.getMediaType());
+            response.setContentLength((int) avatar.getFileSize());
+            is.transferTo(os);
+        }
+    }
+
+    @GetMapping("/from-database")
+    public ResponseEntity<byte[]> getStudentsAvatarFromDB(@PathVariable Long id) {
+
+        Avatar avatar = avatarService.findStudentsAvatar(id);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(avatar.getMediaType()));
+        headers.setContentLength(avatar.getData().length);
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(avatar.getData());
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity handleException() {
+        return ResponseEntity.badRequest().build();
+    }
 }
