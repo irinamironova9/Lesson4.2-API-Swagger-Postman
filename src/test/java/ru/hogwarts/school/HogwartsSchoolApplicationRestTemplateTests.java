@@ -1,18 +1,16 @@
 package ru.hogwarts.school;
 
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.web.client.HttpClientErrorException;
 import org.webjars.NotFoundException;
-import ru.hogwarts.school.controller.AvatarController;
 import ru.hogwarts.school.controller.FacultyController;
 import ru.hogwarts.school.controller.StudentController;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.StudentRepository;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,67 +25,45 @@ class HogwartsSchoolApplicationRestTemplateTests {
     private StudentController studentController;
 
     @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
     private FacultyController facultyController;
 
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static Faculty testFaculty;
-    private static long testFacultyId;
-    private static Student testStudent;
-    private static long testStudentId;
-
-
     @Test
     void contextLoads() {
         assertThat(studentController).isNotNull();
         assertThat(facultyController).isNotNull();
-    }
-
-    @BeforeEach
-    void setUp() {
-        testFaculty = new Faculty();
-        testFaculty.setName("Test");
-        testFaculty.setColor("Test");
-        testFaculty = facultyController.createFaculty(testFaculty);
-        testFacultyId = testFaculty.getId();
-
-        testStudent = new Student();
-        testStudent.setName("TEST");
-        testStudent.setAge(20);
-        testStudent.setFaculty(testFaculty);
-        testStudent = studentController.createStudent(testStudent);
-        testStudentId = testStudent.getId();
-    }
-
-    @AfterEach
-    void cleanUp() {
-        facultyController.deleteFaculty(testFacultyId);
-        studentController.deleteStudent(testStudentId);
+        assertThat(studentRepository).isNotNull();
     }
 
     @Test
     void createStudentTest() {
-        Student s = new Student();
-        s.setName("createStudentTest");
-        s.setAge(20);
-        s.setFaculty(testFaculty);
-        s = studentController.createStudent(s);
-        Student finalS = s;
+        Faculty testFaculty = facultyController.findFaculty(0);
+        Student testStudent = new Student();
+        testStudent.setName("createStudentTest");
+        testStudent.setFaculty(testFaculty);
+        Student s = studentController.createStudent(testStudent);
         assertThat(restTemplate.postForObject(
                 "http://localhost:" + port + "/students/add",
-                s,
+                testStudent, String.class))
+                .isNotNull();
+        assertThat(restTemplate.getForObject(
+                "http://localhost:" + port + "/students/" + s.getId(),
                 String.class))
                 .isNotNull();
         studentController.deleteStudent(s.getId());
-        assertThrows(NotFoundException.class, () -> studentController.findStudent(finalS.getId()));
+        assertThrows(NotFoundException.class, () -> studentController.findStudent(s.getId()));
     }
 
     @Test
     void findStudent() {
         assertThat(restTemplate
                 .getForObject("http://localhost:" + port +
-                        "/students/" + testStudentId, String.class))
+                        "/students/0", String.class))
                 .isNotNull();
     }
 
