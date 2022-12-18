@@ -20,18 +20,7 @@ public class Student {
     @JsonBackReference
     private Faculty faculty;
 
-    public Student() {
-
-    }
-
-    public Student(String name) {
-        this.name = name;
-    }
-
-    public Student(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
+    public Student() { }
 
     public long getId() {
         return id;
@@ -71,6 +60,7 @@ public class Student {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", age=" + age +
+                ", faculty=" + faculty.getName() +
                 '}';
     }
 

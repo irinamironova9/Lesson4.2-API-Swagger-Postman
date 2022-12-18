@@ -36,10 +36,10 @@ public class AvatarController {
             return ResponseEntity.badRequest().body("Слишком большой файл");
         }
         avatarService.uploadStudentsAvatar(id, avatar);
-        return ResponseEntity.ok().body("Аватар успешно установлен");
+        return ResponseEntity.ok().body("Аватар успешно загружен");
     }
 
-    @GetMapping
+    @GetMapping("/from-local-disc")
     public void getStudentsAvatarFromLocalDisc(
             @PathVariable long id,
             HttpServletResponse response) throws IOException {
@@ -66,7 +66,7 @@ public class AvatarController {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity handleException() {
+    public ResponseEntity handleNotFoundException() {
         return ResponseEntity.badRequest().build();
     }
 }

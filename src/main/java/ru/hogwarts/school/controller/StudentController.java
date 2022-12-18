@@ -2,6 +2,7 @@ package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.webjars.NotFoundException;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
@@ -24,12 +25,8 @@ public class StudentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Student> findStudent(@PathVariable("id") long id) {
-        Student s = studentService.findStudent(id);
-        if (s == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(s);
+    public Student findStudent(@PathVariable("id") long id) {
+        return studentService.findStudent(id);
     }
 
     @PutMapping("/update")
@@ -54,11 +51,12 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/faculty")
-    public ResponseEntity<Faculty> getStudentsFaculty(@PathVariable("id") long id) {
-        Faculty f = studentService.getStudentsFaculty(id);
-        if (f == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(f);
+    public Faculty getStudentsFaculty(@PathVariable("id") long id) {
+        return studentService.getStudentsFaculty(id);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity handleNotFoundException() {
+        return ResponseEntity.badRequest().build();
     }
 }

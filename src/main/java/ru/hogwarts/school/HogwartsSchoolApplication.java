@@ -6,10 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @OpenAPIDefinition
-public class Lesson42ApiSwaggerPostmanApplication {
+public class HogwartsSchoolApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Lesson42ApiSwaggerPostmanApplication.class, args);
+        SpringApplication.run(HogwartsSchoolApplication.class, args);
     }
-
 }

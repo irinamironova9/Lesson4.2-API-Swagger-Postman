@@ -44,6 +44,7 @@ public class StudentService {
 
     public Faculty getStudentsFaculty(long id) {
         return studentRepository.findById(id)
-                .map(Student::getFaculty).orElse(null);
+                .map(Student::getFaculty)
+                .orElseThrow(() -> new NotFoundException(null));
     }
 }
