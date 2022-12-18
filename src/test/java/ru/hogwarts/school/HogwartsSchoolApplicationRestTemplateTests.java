@@ -42,47 +42,49 @@ class HogwartsSchoolApplicationRestTemplateTests {
 
     @Test
     void createStudentTest() {
-        Faculty testFaculty = facultyController.findFaculty(0);
-        Student testStudent = new Student();
-        testStudent.setName("createStudentTest");
-        testStudent.setFaculty(testFaculty);
-        Student s = studentController.createStudent(testStudent);
+        Student testStudent = studentController.findStudent(0);
         assertThat(restTemplate.postForObject(
                 "http://localhost:" + port + "/students/add",
                 testStudent, String.class))
                 .isNotNull();
-        assertThat(restTemplate.getForObject(
-                "http://localhost:" + port + "/students/" + s.getId(),
-                String.class))
-                .isNotNull();
-        studentController.deleteStudent(s.getId());
-        assertThrows(NotFoundException.class, () -> studentController.findStudent(s.getId()));
     }
 
     @Test
-    void findStudent() {
-        assertThat(restTemplate
-                .getForObject("http://localhost:" + port +
-                        "/students/0", String.class))
+    void findStudentTest() {
+        assertThat(restTemplate.getForObject(
+                "http://localhost:" + port + "/students/0", String.class))
                 .isNotNull();
     }
 
-//    @PutMapping("/update")
-//    public Student updateStudent(@RequestBody Student student) {
-//        return studentService.updateStudent(student);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteStudent(@PathVariable("id") long id) {
-//        studentService.deleteStudent(id);
-//        return ResponseEntity.ok().body("Студент успешно удалён");
-//    }
-//
+    @Test
+    void updateStudentTest() {
+        Student testStudent = studentController.findStudent(0);
+        assertThat(restTemplate.postForObject(
+                "http://localhost:" + port + "/students/update",
+                testStudent, String.class))
+                .isNotNull();
+    }
+
+    @Test
+    void deleteStudentTest() {
+        Faculty faculty = facultyController.findFaculty(0);
+        Student student = new Student();
+        student.setName("deleteStudentTest");
+        student.setFaculty(faculty);
+        long testId = this.studentRepository.save(student).getId();
+        restTemplate.delete(
+                "http://localhost:" + port + "/students/" + testId);
+        assertThrows(NotFoundException.class,
+                () -> restTemplate.getForObject(
+                        "http://localhost:" + port + "/students/0",
+                        String.class));
+    }
+
 //    @GetMapping("/filter/age")
 //    public Collection<Student> findStudentsByAge(@RequestParam int age) {
 //        return studentService.findStudentsByAge(age);
 //    }
-//
+
 //    @GetMapping("/filter/age-gap")
 //    public Collection<Student> findByAgeBetween(@RequestParam int min, @RequestParam int max) {
 //        return studentService.findByAgeBetween(min, max);
