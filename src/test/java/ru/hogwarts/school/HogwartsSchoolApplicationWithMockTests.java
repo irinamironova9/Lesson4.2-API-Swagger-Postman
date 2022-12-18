@@ -2,80 +2,100 @@ package ru.hogwarts.school;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import ru.hogwarts.school.controller.AvatarController;
 import ru.hogwarts.school.controller.FacultyController;
-import ru.hogwarts.school.controller.StudentController;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import java.util.Collections;
+import java.util.Optional;
+import org.json.JSONObject;
+import org.mockito.InjectMocks;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.service.FacultyService;
+
+@WebMvcTest
 class HogwartsSchoolApplicationWithMockTests {
 
-    @LocalServerPort
-    private int port;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private StudentController studentController;
+        @MockBean
+        private FacultyRepository facultyRepository;
 
-    @Autowired
-    private FacultyController facultyController;
+        @SpyBean
+        private FacultyService facultyService;
 
-    @Autowired
-    private AvatarController avatarController;
+        @InjectMocks
+        private FacultyController facultyController;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+        @Test
+        public void testStudents() throws Exception {
+            final String name = "Ivanov Ivan";
+            final String color = "green";
+            final long id = 1;
 
-    @Test
-    void contextLoads() throws Exception {
-        assertThat(studentController).isNotNull();
-        assertThat(facultyController).isNotNull();
-        assertThat(avatarController).isNotNull();
-    }
+            Faculty faculty = new Faculty(id, name, color);
 
-    @Test
-    void testCreateStudent() {
+            JSONObject facultyObject = new JSONObject();
+            facultyObject.put("id", id);
+            facultyObject.put("name", name);
+            facultyObject.put("color", color);
 
-    }
 
-    @Test
-    void findStudent() {
-        assertThat(restTemplate
-                .getForObject("http://localhost:" + port + "/students/1", String.class))
-                .isNotNull();
-    }
+            when(facultyRepository.save(any(Faculty.class))).thenReturn(faculty);
+            when(facultyRepository.findById(eq(id))).thenReturn(Optional.of(faculty));
+            when(facultyRepository.findAllByColor(eq(color))).thenReturn(Collections.singleton(faculty));
 
-//    @PutMapping("/update")
-//    public Student updateStudent(@RequestBody Student student) {
-//        return studentService.updateStudent(student);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteStudent(@PathVariable("id") long id) {
-//        studentService.deleteStudent(id);
-//        return ResponseEntity.ok().body("Студент успешно удалён");
-//    }
-//
-//    @GetMapping("/filter/age")
-//    public Collection<Student> findStudentsByAge(@RequestParam int age) {
-//        return studentService.findStudentsByAge(age);
-//    }
-//
-//    @GetMapping("/filter/age-gap")
-//    public Collection<Student> findByAgeBetween(@RequestParam int min, @RequestParam int max) {
-//        return studentService.findByAgeBetween(min, max);
-//    }
-//
-//    @GetMapping("/{id}/faculty")
-//    public Faculty getStudentsFaculty(@PathVariable("id") long id) {
-//        return studentService.getStudentsFaculty(id);
-//    }
-//
-//    @ExceptionHandler(NotFoundException.class)
-//    public ResponseEntity handleNotFoundException() {
-//        return ResponseEntity.badRequest().build();
-//    }
+            mockMvc.perform(MockMvcRequestBuilders
+                            .post("/faculty")
+                            .content(facultyObject.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(id))
+                    .andExpect(jsonPath("$.name").value(name))
+                    .andExpect(jsonPath("$.color").value(color));
+
+            mockMvc.perform(MockMvcRequestBuilders
+                            .put("/faculty")
+                            .content(facultyObject.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(id))
+                    .andExpect(jsonPath("$.name").value(name))
+                    .andExpect(jsonPath("$.color").value(color));
+
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get("/faculty/" + id)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].id").value(id))
+                    .andExpect(jsonPath("$[0].name").value(name))
+                    .andExpect(jsonPath("$[0].color").value(color));
+
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get("/faculty?color=" + color)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(id))
+                    .andExpect(jsonPath("$.name").value(name))
+                    .andExpect(jsonPath("$.color").value(color));
+
+            mockMvc.perform(MockMvcRequestBuilders
+                            .delete("/faculty/" + id)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk());
+        }
 }

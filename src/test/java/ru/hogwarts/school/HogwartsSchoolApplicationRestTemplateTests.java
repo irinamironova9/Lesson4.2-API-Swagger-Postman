@@ -1,102 +1,106 @@
 package ru.hogwarts.school;
 
-import org.junit.jupiter.api.*;
+import net.minidev.json.JSONObject;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.webjars.NotFoundException;
-import ru.hogwarts.school.controller.FacultyController;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.web.servlet.MockMvc;
 import ru.hogwarts.school.controller.StudentController;
-import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.StudentRepository;
+import ru.hogwarts.school.service.StudentService;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+@WebMvcTest
 class HogwartsSchoolApplicationRestTemplateTests {
 
-    @LocalServerPort
-    private int port;
-
     @Autowired
-    private StudentController studentController;
+    private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private StudentRepository studentRepository;
 
-    @Autowired
-    private FacultyController facultyController;
+    @MockBean
+    private AvatarRepository avatarRepository;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @SpyBean
+    private StudentService studentService;
 
-    @Test
-    void contextLoads() {
-        assertThat(studentController).isNotNull();
-        assertThat(facultyController).isNotNull();
-        assertThat(studentRepository).isNotNull();
-    }
+    @InjectMocks
+    private StudentController studentController;
 
     @Test
-    void createStudentTest() {
-        Student testStudent = studentController.findStudent(0);
-        assertThat(restTemplate.postForObject(
-                "http://localhost:" + port + "/students/add",
-                testStudent, String.class))
-                .isNotNull();
+    public void testStudents() throws Exception {
+        final String name = "Ivanov Ivan";
+        final int age = 21;
+        final long id = 1;
+
+        Student student = new Student(id, name, age);
+
+        JSONObject studentObject = new JSONObject();
+        studentObject.put("id", id);
+        studentObject.put("name", name);
+        studentObject.put("age", age);
+
+
+        when(studentRepository.save(any(Student.class))).thenReturn(student);
+        when(studentRepository.findAllByAge(eq(age))).thenReturn(Collections.singleton(student));
+        when(studentRepository.findById(eq(id))).thenReturn(Optional.of(student));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/student")
+                        .content(studentObject.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value(name))
+                .andExpect(jsonPath("$.age").value(age));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/student")
+                        .content(studentObject.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value(name))
+                .andExpect(jsonPath("$.age").value(age));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/student/" + id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value(name))
+                .andExpect(jsonPath("$.age").value(age));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/student?age" + age)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(id))
+                .andExpect(jsonPath("$[0].name").value(name))
+                .andExpect(jsonPath("$[0].age").value(age));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/student/" + id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
-
-    @Test
-    void findStudentTest() {
-        assertThat(restTemplate.getForObject(
-                "http://localhost:" + port + "/students/0", String.class))
-                .isNotNull();
-    }
-
-    @Test
-    void updateStudentTest() {
-        Student testStudent = studentController.findStudent(0);
-        assertThat(restTemplate.postForObject(
-                "http://localhost:" + port + "/students/update",
-                testStudent, String.class))
-                .isNotNull();
-    }
-
-    @Test
-    void deleteStudentTest() {
-        Faculty faculty = facultyController.findFaculty(0);
-        Student student = new Student();
-        student.setName("deleteStudentTest");
-        student.setFaculty(faculty);
-        long testId = this.studentRepository.save(student).getId();
-        restTemplate.delete(
-                "http://localhost:" + port + "/students/" + testId);
-        assertThrows(NotFoundException.class,
-                () -> restTemplate.getForObject(
-                        "http://localhost:" + port + "/students/0",
-                        String.class));
-    }
-
-//    @GetMapping("/filter/age")
-//    public Collection<Student> findStudentsByAge(@RequestParam int age) {
-//        return studentService.findStudentsByAge(age);
-//    }
-
-//    @GetMapping("/filter/age-gap")
-//    public Collection<Student> findByAgeBetween(@RequestParam int min, @RequestParam int max) {
-//        return studentService.findByAgeBetween(min, max);
-//    }
-//
-//    @GetMapping("/{id}/faculty")
-//    public Faculty getStudentsFaculty(@PathVariable("id") long id) {
-//        return studentService.getStudentsFaculty(id);
-//    }
-//
-//    @ExceptionHandler(NotFoundException.class)
-//    public ResponseEntity handleNotFoundException() {
-//        return ResponseEntity.badRequest().build();
-//    }
 }
