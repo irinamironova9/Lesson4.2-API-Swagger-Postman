@@ -16,9 +16,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Queue;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
-@RequestMapping("/students/{id}/avatar")
+@RequestMapping("/students/avatars")
 public class AvatarController {
 
     private final AvatarService avatarService;
@@ -27,7 +32,7 @@ public class AvatarController {
         this.avatarService = avatarService;
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadStudentsAvatar(
             @PathVariable long id,
             @RequestParam MultipartFile avatar) throws IOException {
@@ -39,7 +44,7 @@ public class AvatarController {
         return ResponseEntity.ok().body("Аватар успешно загружен");
     }
 
-    @GetMapping("/from-local-disc")
+    @GetMapping("/{id}/from-local-disc")
     public void getStudentsAvatarFromLocalDisc(
             @PathVariable long id,
             HttpServletResponse response) throws IOException {
@@ -55,7 +60,7 @@ public class AvatarController {
         }
     }
 
-    @GetMapping("/from-database")
+    @GetMapping("/{id}/from-database")
     public ResponseEntity<byte[]> getStudentsAvatarFromDB(@PathVariable Long id) {
 
         Avatar avatar = avatarService.findStudentsAvatar(id);
@@ -63,6 +68,14 @@ public class AvatarController {
         headers.setContentType(MediaType.parseMediaType(avatar.getMediaType()));
         headers.setContentLength(avatar.getData().length);
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(avatar.getData());
+    }
+
+    @GetMapping
+    public Collection<Avatar> getAllAvatars(
+            @RequestParam("page") int pageNumber,
+            @RequestParam("size") int pageSize) {
+
+        return avatarService.getAllAvatars(pageNumber, pageSize);
     }
 
     @ExceptionHandler(NotFoundException.class)

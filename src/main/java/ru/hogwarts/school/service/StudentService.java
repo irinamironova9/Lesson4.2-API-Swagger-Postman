@@ -1,5 +1,6 @@
 package ru.hogwarts.school.service;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 import ru.hogwarts.school.model.Faculty;
@@ -46,5 +47,17 @@ public class StudentService {
         return studentRepository.findById(id)
                 .map(Student::getFaculty)
                 .orElseThrow(() -> new NotFoundException(null));
+    }
+
+    public int getTotalNumberOfStudents() {
+        return studentRepository.getTotalNumberOfStudents();
+    }
+
+    public int getAverageAgeOfStudents() {
+        return studentRepository.getAverageAgeOfStudents();
+    }
+
+    public Collection<Student> getLastFiveStudents() {
+        return studentRepository.getLastFiveStudents();
     }
 }

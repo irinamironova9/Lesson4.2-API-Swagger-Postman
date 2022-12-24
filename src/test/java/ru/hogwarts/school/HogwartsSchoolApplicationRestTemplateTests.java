@@ -4,15 +4,23 @@ import net.minidev.json.JSONObject;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.hogwarts.school.controller.StudentController;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -26,81 +34,46 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-@WebMvcTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class HogwartsSchoolApplicationRestTemplateTests {
 
+    @LocalServerPort
+    private int port;
+
     @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private StudentRepository studentRepository;
-
-    @MockBean
-    private AvatarRepository avatarRepository;
-
-    @SpyBean
-    private StudentService studentService;
-
-    @InjectMocks
-    private StudentController studentController;
+    private TestRestTemplate restTemplate;
 
     @Test
-    public void testStudents() throws Exception {
-        final String name = "Ivanov Ivan";
-        final int age = 21;
-        final long id = 1;
+    public void createStudentTest() {
+        Faculty faculty = new Faculty();
+        faculty.setName("Test Faculty");
+        ResponseEntity<Faculty> resultFaculty =
+                restTemplate.postForEntity("http://localhost:" + port + "/faculties/add",
+                faculty, Faculty.class);
+        assertThat(resultFaculty.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(resultFaculty.getBody()).isNotNull();
+        assertThat(resultFaculty.getBody().getId()).isNotNull();
+        Faculty created = resultFaculty.getBody();
 
-        Student student = new Student(id, name, age);
-
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("id", id);
-        studentObject.put("name", name);
-        studentObject.put("age", age);
-
-
-        when(studentRepository.save(any(Student.class))).thenReturn(student);
-        when(studentRepository.findAllByAge(eq(age))).thenReturn(Collections.singleton(student));
-        when(studentRepository.findById(eq(id))).thenReturn(Optional.of(student));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/student")
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.name").value(name))
-                .andExpect(jsonPath("$.age").value(age));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .put("/student")
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.name").value(name))
-                .andExpect(jsonPath("$.age").value(age));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/student/" + id)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.name").value(name))
-                .andExpect(jsonPath("$.age").value(age));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/student?age" + age)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(id))
-                .andExpect(jsonPath("$[0].name").value(name))
-                .andExpect(jsonPath("$[0].age").value(age));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/student/" + id)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+//        Student student = new Student();
+//        student.setName("Test Student");
+//        student.setFaculty(created);
+        JSONObject student = new JSONObject();
+        student.put("name", "Test Student");
+        student.put("faculty", created);
+        ResponseEntity<Student> result =
+                restTemplate.postForEntity("http://localhost:" + port + "/students/add",
+                student, Student.class);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getId()).isNotNull();
     }
+
+    @Test
+    public void findStudentTest() {
+
+    }
+
+
 }

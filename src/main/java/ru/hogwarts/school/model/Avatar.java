@@ -1,7 +1,6 @@
 package ru.hogwarts.school.model;
 
 import javax.persistence.*;
-import java.util.Arrays;
 import java.util.Objects;
 
 @Entity
@@ -9,7 +8,7 @@ public class Avatar {
 
     @Id
     @GeneratedValue
-    private Long id;
+    private long id;
 
     private String filePath;
     private long fileSize;
@@ -73,28 +72,15 @@ public class Avatar {
     }
 
     @Override
-    public String toString() {
-        return "Avatar{" +
-                "id=" + id +
-                ", filePath='" + filePath + '\'' +
-                ", fileSize=" + fileSize +
-                ", mediaType='" + mediaType + '\'' +
-                ", studentId=" + student.getId() +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Avatar avatar = (Avatar) o;
-        return fileSize == avatar.fileSize && Objects.equals(filePath, avatar.filePath) && Objects.equals(mediaType, avatar.mediaType) && Arrays.equals(data, avatar.data) && Objects.equals(student, avatar.student);
+        return id == avatar.id;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(filePath, fileSize, mediaType, student);
-        result = 31 * result + Arrays.hashCode(data);
-        return result;
+        return Objects.hash(id);
     }
 }

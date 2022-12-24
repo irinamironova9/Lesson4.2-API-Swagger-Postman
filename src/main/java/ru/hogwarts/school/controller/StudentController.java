@@ -59,4 +59,19 @@ public class StudentController {
     public ResponseEntity handleNotFoundException() {
         return ResponseEntity.badRequest().build();
     }
+
+    @GetMapping("/total")
+    public int getTotalNumberOfStudents() {
+        return studentService.getTotalNumberOfStudents();
+    }
+
+    @GetMapping("/average-age")
+    public int getAverageAgeOfStudents() {
+        return studentService.getAverageAgeOfStudents();
+    }
+
+    @GetMapping("/last-five")
+    public Collection<Student> getLastFiveStudents() {
+        return studentService.getLastFiveStudents();
+    }
 }

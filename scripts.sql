@@ -25,4 +25,3 @@ from faculty as f,
      student as s
 where f.id = s.faculty_id
 order by f.name, s.name;
-
