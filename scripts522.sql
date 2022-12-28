@@ -9,7 +9,8 @@ create table cars
 
 create table people
 (
-    name   text primary key,
+    id     serial primary key,
+    name   text not null,
     age    integer check ( age >= 0 ),
     driver boolean default false,
     car_id integer references cars (id)
