@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.webjars.NotFoundException;
 import ru.hogwarts.school.model.Avatar;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
 
@@ -16,6 +17,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
@@ -70,8 +72,15 @@ public class AvatarService {
     public Avatar findStudentsAvatar(long studentId) {
         logger.info("Was invoked method for find student`s avatar, " +
                 "student`s id = {}", studentId);
-        return avatarRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new NotFoundException(null));
+        try {
+            Avatar avatar = avatarRepository.findByStudentId(studentId).get();
+            return avatar;
+        } catch (NoSuchElementException e) {
+            logger.error("There is not student with id = {}", studentId);
+            throw new NotFoundException(null);
+        }
+//        return avatarRepository.findByStudentId(studentId)
+//                .orElseThrow(() -> new NotFoundException(null));
     }
 
     public Collection<Avatar> getAllAvatars(int pageNumber, int pageSize) {
