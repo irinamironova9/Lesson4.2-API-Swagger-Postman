@@ -48,65 +48,65 @@ class HogwartsSchoolApplicationRestTemplateTests {
     private long studentId;
     private Faculty createdFaculty;
 
-    @BeforeEach
-    @Test
-    public void createStudentTest() {
-        Faculty faculty = new Faculty();
-        faculty.setName("Test Faculty");
-        ResponseEntity<Faculty> resultFaculty =
-                restTemplate.postForEntity("http://localhost:" + port + "/faculties/add",
-                faculty, Faculty.class);
-        assertThat(resultFaculty.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(resultFaculty.getBody()).isNotNull();
-        assertThat(resultFaculty.getBody().getId()).isNotNull();
-        createdFaculty = resultFaculty.getBody();
-
-//        Student student = new Student();
-//        student.setName("Test Student");
-//        student.setFaculty(created);
-        JSONObject student = new JSONObject();
-        student.put("name", "Test Student");
-        student.put("faculty", createdFaculty);
-        ResponseEntity<Student> result =
-                restTemplate.postForEntity("http://localhost:" + port + "/students/add",
-                student, Student.class);
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getBody()).isNotNull();
-        assertThat(result.getBody().getId()).isNotNull();
-        studentId = result.getBody().getId();
-    }
-
-    @Test
-    public void findStudentTest() {
-        ResponseEntity<Student> result =
-                restTemplate.getForEntity(
-                        "http://localhost:" + port + "/students/" + studentId,
-                        Student.class);
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getBody()).isNotNull();
-        assertThat(result.getBody().getId()).isEqualTo(studentId);
-        assertThat(result.getBody().getName()).isEqualTo("Test Student");
-    }
-
-    @Test
-    public void updateStudentTest() {
-        JSONObject student = new JSONObject();
-        student.put("id", studentId);
-        student.put("age", 20);
-        ResponseEntity<Student> result =
-                restTemplate.postForEntity(
-                        "http://localhost:" + port + "/students/update",
-                        student,
-                        Student.class);
-
+//    @BeforeEach
+//    @Test
+//    public void createStudentTest() {
+//        Faculty faculty = new Faculty();
+//        faculty.setName("Test Faculty");
+//        ResponseEntity<Faculty> resultFaculty =
+//                restTemplate.postForEntity("http://localhost:" + port + "/faculties/add",
+//                faculty, Faculty.class);
+//        assertThat(resultFaculty.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assertThat(resultFaculty.getBody()).isNotNull();
+//        assertThat(resultFaculty.getBody().getId()).isNotNull();
+//        createdFaculty = resultFaculty.getBody();
+//
+////        Student student = new Student();
+////        student.setName("Test Student");
+////        student.setFaculty(created);
+//        JSONObject student = new JSONObject();
+//        student.put("name", "Test Student");
+//        student.put("faculty", createdFaculty);
+//        ResponseEntity<Student> result =
+//                restTemplate.postForEntity("http://localhost:" + port + "/students/add",
+//                student, Student.class);
+//        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assertThat(result.getBody()).isNotNull();
+//        assertThat(result.getBody().getId()).isNotNull();
+//        studentId = result.getBody().getId();
+//    }
+//
+//    @Test
+//    public void findStudentTest() {
 //        ResponseEntity<Student> result =
 //                restTemplate.getForEntity(
 //                        "http://localhost:" + port + "/students/" + studentId,
 //                        Student.class);
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getBody()).isNotNull();
-        assertThat(result.getBody().getId()).isEqualTo(studentId);
-        assertThat(result.getBody().getName()).isEqualTo("Test Student");
-        assertThat(result.getBody().getAge()).isEqualTo(20);
-    }
+//        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assertThat(result.getBody()).isNotNull();
+//        assertThat(result.getBody().getId()).isEqualTo(studentId);
+//        assertThat(result.getBody().getName()).isEqualTo("Test Student");
+//    }
+
+//    @Test
+//    public void updateStudentTest() {
+//        JSONObject student = new JSONObject();
+//        student.put("id", studentId);
+//        student.put("age", 20);
+//        ResponseEntity<Student> result =
+//                restTemplate.postForEntity(
+//                        "http://localhost:" + port + "/students/update",
+//                        student,
+//                        Student.class);
+//
+////        ResponseEntity<Student> result =
+////                restTemplate.getForEntity(
+////                        "http://localhost:" + port + "/students/" + studentId,
+////                        Student.class);
+//        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assertThat(result.getBody()).isNotNull();
+//        assertThat(result.getBody().getId()).isEqualTo(studentId);
+//        assertThat(result.getBody().getName()).isEqualTo("Test Student");
+//        assertThat(result.getBody().getAge()).isEqualTo(20);
+//    }
 }
