@@ -9,7 +9,10 @@ import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service
 public class FacultyService {
@@ -77,5 +80,20 @@ public class FacultyService {
 //        return facultyRepository.findById(id)
 //                .map(Faculty::getStudents)
 //                .orElseThrow(() -> new NotFoundException(null));
+    }
+
+    public String getLongestFacultyName() {
+        return facultyRepository.findAll()
+                .parallelStream()
+                .map(Faculty::getName)
+                .max(Comparator.comparing(String::length))
+                .get();
+    }
+
+    public Integer getInteger() {
+        return Stream.iterate(1, a -> a + 1)
+                .limit(1_000_000)
+                .parallel()
+                .reduce(0, Integer::sum);
     }
 }

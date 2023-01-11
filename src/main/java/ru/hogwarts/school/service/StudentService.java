@@ -10,7 +10,9 @@ import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -83,5 +85,23 @@ public class StudentService {
     public Collection<Student> getLastFiveStudents() {
         logger.info("Was invoked method for get last five students");
         return studentRepository.getLastFiveStudents();
+    }
+
+    public List<String> getAllNamesStartingWithAInUpperCaseAlphabetical() {
+        return studentRepository.findAll()
+                .parallelStream()
+                .map(Student::getName)
+                .filter(s -> s.startsWith("A"))
+                .map(String::toUpperCase)
+                .sorted()
+                .toList();
+    }
+
+    public Long getAverageAge() {
+        return Math.round(studentRepository.findAll()
+                .parallelStream()
+                .mapToInt(Student::getAge)
+                .average()
+                .getAsDouble());
     }
 }

@@ -62,4 +62,14 @@ public class FacultyController {
     public ResponseEntity handleNotFoundException() {
         return ResponseEntity.badRequest().build();
     }
+
+    @GetMapping("/names/longest")
+    public String getLongestFacultyName() {
+        return facultyService.getLongestFacultyName();
+    }
+
+    @GetMapping("/integer")
+    public Integer getInteger() {
+        return facultyService.getInteger();
+    }
 }
